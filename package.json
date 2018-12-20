@@ -16,12 +16,26 @@
     "tutorial"
   ],
   "author": "Chris Wilson",
-  "license": "BSD3",
+  "license": "BSD-3-Clause",
   "bugs": {
     "url": "https://github.com/twopoint718/traffic_statechart/issues"
   },
   "homepage": "https://github.com/twopoint718/traffic_statechart#readme",
   "dependencies": {
+    "react": "^16.7.0",
+    "react-dom": "^16.7.0",
     "xstate": "^4.2.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.1.0",
+    "@babel/core": "^7.1.0",
+    "@babel/preset-env": "^7.1.0",
+    "@babel/preset-react": "^7.0.0",
+    "babel-loader": "^8.0.2",
+    "css-loader": "^1.0.0",
+    "style-loader": "^0.23.0",
+    "webpack": "^4.19.1",
+    "webpack-cli": "^3.1.1",
+    "webpack-dev-server": "^3.1.10"
   }
 }
