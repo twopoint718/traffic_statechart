@@ -29,13 +29,7 @@ const trafficLightMachine = XState.Machine(
           SOUTH_SENSOR: { target: "SlowWest", actions: "setSouth" }
         },
         after: {
-          60000: [
-            {
-              target: "SlowWest",
-              cond: (ctx, _e) =>
-                ctx.walkButton || ctx.southSensor || !ctx.westSensor
-            }
-          ]
+          60000: "SlowWest"
         }
       },
 
@@ -55,13 +49,7 @@ const trafficLightMachine = XState.Machine(
           WEST_SENSOR: { target: "SlowSouth", actions: "setWest" }
         },
         after: {
-          60000: [
-            {
-              target: "SlowSouth",
-              cond: (ctx, _e) =>
-                ctx.walkButton || ctx.westSensor || !ctx.southSensor
-            }
-          ]
+          60000: "SlowSouth"
         }
       },
 
@@ -71,8 +59,7 @@ const trafficLightMachine = XState.Machine(
             { target: "Walk", cond: (ctx, _e) => ctx.walkButton },
             { target: "GoWest" }
           ]
-        },
-        onExit: "clearSensors"
+        }
       },
 
       Walk: {
@@ -82,17 +69,22 @@ const trafficLightMachine = XState.Machine(
           SOUTH_SENSOR: { target: "Blinking", actions: "setSouth" }
         },
         after: {
-          60000: {
-            target: "Blinking",
-            cond: (ctx, _e) => ctx.southSensor || ctx.westSensor
-          }
+          30000: "Blinking"
         }
       },
 
       Blinking: {
         on: {
-          "": { target: "GoWest", cond: "blinkingIsDone" },
-          BLINK: { target: "Blinking", actions: "incrementBlinker" }
+          "": [
+            {
+              target: "GoWest",
+              cond: (ctx, evt) => blinkingIsDone(ctx, evt) && ctx.westSensor
+            },
+            { target: "GoSouth", cond: "blinkingIsDone" }
+          ]
+        },
+        after: {
+          1000: { target: "Blinking", actions: "incrementBlinker" }
         }
       }
     }
