@@ -1,29 +1,42 @@
 const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CleanWebpackPlugin = require("clean-webpack-plugin");
 const webpack = require("webpack");
 
 module.exports = {
-  entry: ".src/index.js",
-  mode: "development",
+  entry: {
+    app: "./src/index.js"
+  },
   module: {
     rules: [
       {
         test: /\.(js|jsx)$/,
         exclude: /(node_modules|bower_components)/,
-        loader: "babel-loader",
-        options: { presets: ["@babel/env"] }
+        loader: 'babel-loader',
+        options: {
+          presets: ['@babel/env']
+        }
       },
       {
         test: /\.css$/,
         use: ["style-loader", "css-loader"]
       }
-    ]
+    ],
   },
-  resolve: { extensions: ["*", ".js", ".jsx"] },
+  devtool: "inline-source-map",
+  devServer: {
+    contentBase: "./dist",
+    hot: true
+  },
+  plugins: [
+    new CleanWebpackPlugin(["dist"]),
+    new HtmlWebpackPlugin({
+      title: "Hot Module Replacement"
+    }),
+    new webpack.HotModuleReplacementPlugin()
+  ],
   output: {
-    path: path.resolve(__dirname, "public/"),
-    port: 3000,
-    publicPath: "http://localhost:3002/dist/",
-    hotOnly: true
-  },
-  plugins: [new webpack.HotModuleReplacementPlugin()]
+    filename: "[name].bundle.js",
+    path: path.resolve(__dirname, "dist")
+  }
 };
