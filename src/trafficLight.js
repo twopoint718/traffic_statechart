@@ -1,101 +1,38 @@
-const XState = require('xstate')
-const Interpreter = require('xstate/lib/interpreter')
-const Timers = require('timers')
+import React, { Component } from 'react';
+import { interpret } from 'xstate/lib/interpreter';
 
-const trafficLightMachine = XState.Machine({
-  id: 'trafficLight',
-  initial: 'Going',
-  context: {
-    blinkCount: 0
-  },
+import trafficLightMachine from './TrafficLightMachine';
 
-  states: {
-    Going: {
-      id: 'Going',
-      initial: 'GoWest',
-      on: {
-        WALK_BUTTON: '#trafficLight.SlowWalk'
-      },
-      states: {
-        GoWest: {
-          after: {
-            6000: '#trafficLight.SlowWest'
-          }
-        },
+class TrafficLight extends Component {
+  constructor() {
+    this.state = {
+      current: trafficLightMachine.initialState,
+    };
 
-        GoSouth: {
-          after: {
-            6000: '#trafficLight.SlowSouth'
-          }
-        }
-      }
-    },
-
-    SlowWalk: {
-      after: {
-        500: 'Walk'
-      }
-    },
-
-    SlowWest: {
-      after: {
-        500: 'Going.GoSouth'
-      }
-    },
-
-    SlowSouth: {
-      after: {
-        500: 'Going.GoWest'
-      }
-    },
-
-    Walk: {
-      after: {
-        3000: 'Blinking'
-      },
-      onEntry: (ctx, event) => {
-        ctx.blinkCount = 0
-      }
-    },
-
-    Blinking: {
-      on: {
-        '': {
-          target: 'Going.GoSouth',
-          cond: (ctx, event) => {
-            return ctx.blinkCount > 5
-          }
-        }
-      },
-      after: {
-        100: {
-          target: 'Blinking',
-          actions: (ctx, event) => {
-            ctx.blinkCount = ctx.blinkCount + 1
-          }
-        }
-      }
-    }
+    this.service = interpret(trafficLightMachine).onTransition(current =>
+      this.setState({ current })
+    );
   }
-})
 
-const trafficLight = Interpreter.interpret(trafficLightMachine).onTransition(
-  state => {
-    console.log(state.value)
+  componentDidMount() {
+    this.service.start();
   }
-)
 
-console.log('Traffic light control: wal(k)\n')
-const readline = require('readline')
-readline.emitKeypressEvents(process.stdin)
-process.stdin.setRawMode(true)
-process.stdin.on('keypress', (str, key) => {
-  if (key.ctrl && key.name === 'c') {
-    process.exit()
-  } else {
-    if (key.name === 'k') trafficLight.send('WALK_BUTTON')
+  componentWillUnmount() {
+    this.service.stop();
   }
-})
 
-// Start the state interpreter
-trafficLight.start()
+  render() {
+    const { current } = this.state;
+    const { send } = this.service;
+
+    return (
+      <div>
+        <div>{current}</div>
+        <button onClick={() => send('WALK_BUTTON')}>WALK</button>
+      </div>
+    );
+  }
+}
+
+export default TrafficLight;
